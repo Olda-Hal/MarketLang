@@ -42,19 +42,60 @@ for inst in runtime.instructions.keys():
 # now we need to define the main function that will interpret the code
 def main(path: str):
     # open the file
+    currency_symbols = ["€", "$", "£", "¥", "₿"]
     with open(path, "r") as file:
         # read the file
         code = file.read()
         # split the code into lines
         code = code.split("\n")
         # interpret each line
-        for line in code:
+        for line in range(len(code)):
             # split the line into words
-            words = line.split()
+            words = code[line].split()
             # check if the first word is an instruction
             if words[0] in runtime.instructions:
-                pass
-
+                runtime.instructions[words[0]].execute(*words[1:])
+            # check if the first word is a variable
+            elif words[0] in runtime.variables:
+                val = compute_type(words[2])
+                if words[1] == "=":
+                    runtime.variables[words[0]] = val
+                elif words[1] == "+=":
+                    runtime.variables[words[0]] += val
+                elif words[1] == "-=":
+                    runtime.variables[words[0]] -= val
+                elif words[1] == "*=":
+                    runtime.variables[words[0]] *= val
+                elif words[1] == "/=":
+                    if val == 0:
+                        return Exception(f"Division by zero on line {line+1}: {code[line]}")
+                    runtime.variables[words[0]] /= val
+                elif words[1] == "++":
+                    runtime.variables[words[0]] += 1
+                elif words[1] == "--":
+                    runtime.variables[words[0]] -= 1
+                else:
+                    return Exception(f"Invalid variable operation on line {line+1}: {code[line]}")
+                
+                
+            # check if the first word is a comment
+            elif words[0][0] in currency_symbols:
+                continue
+            
             else:
-                print("Invalid instruction")
+                return Exception(f"Invalid instruction on line {line+1}: {code[line]}")
+    return runtime.wallet
+
+def compute_type(value):
+    if value[0] == "\"" and value[-1] == "\"":
+        return str(value)
+    else:
+        try:
+            return float(value)
+        except:
+            return Exception(f"Invalid value: {value}")
+
+if __name__ == "__main__":
+    print(main("code.Mlang"))
+
 
