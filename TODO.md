@@ -1,0 +1,13 @@
+- [ ] price
+- [ ] buy
+- [ ] sell
+- [ ] count
+- [ ] wallet
+- [ ] wait
+- [ ] print
+- [ ] rent
+- [ ] release
+- [x] <- operator
+- [ ] goto
+- [x] codeblocks
+- [ ] if

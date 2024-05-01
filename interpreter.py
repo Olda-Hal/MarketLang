@@ -1,5 +1,6 @@
 import instruction
 import math
+import logger
 # this file is the main file for the interpretation of the MarketLang language
 
 # first of all, we need to define all of the avalible instructions in the language
@@ -12,6 +13,13 @@ class Runtime:
         self.wallet = 10000
         self.user_instructions = {}
         self.variables = {}
+        self.logger = logger.Logger("console.log")
+        self.codeblocks = {}
+    
+    def stop(self):
+        self.logger.log("-----------Program stopped-----------")
+        self.logger.log(f"Final wallet: {self.wallet}\nFinal variables: {self.variables}\nFinal user instructions: {self.user_instructions}")
+        self.logger.close()
 
 
 runtime = Runtime()
@@ -39,43 +47,37 @@ for inst in runtime.instructions.keys():
         runtime.user_instructions[inst] = math.inf
     runtime.user_instructions[inst] = 0
 
+currency_symbols = ["€", "$", "£", "¥", "₿"]
+
 # now we need to define the main function that will interpret the code
 def main(path: str):
-    # open the file
-    currency_symbols = ["€", "$", "£", "¥", "₿"]
+    # open the file    
     with open(path, "r") as file:
         # read the file
         code = file.read()
         # split the code into lines
         code = code.split("\n")
+
+        # record all the codeblocks, if there is an error, end code execution
+        if not record_codeblocks(code):
+            return
+
         # interpret each line
         for line in range(len(code)):
             # split the line into words
             words = code[line].split()
+            # check if the line is empty
+            if len(words) == 0:
+                continue
             # check if the first word is an instruction
             if words[0] in runtime.instructions:
                 runtime.instructions[words[0]].execute(*words[1:])
             # check if the first word is a variable
             elif words[0] in runtime.variables:
-                val = compute_type(words[2])
-                if words[1] == "=":
-                    runtime.variables[words[0]] = val
-                elif words[1] == "+=":
-                    runtime.variables[words[0]] += val
-                elif words[1] == "-=":
-                    runtime.variables[words[0]] -= val
-                elif words[1] == "*=":
-                    runtime.variables[words[0]] *= val
-                elif words[1] == "/=":
-                    if val == 0:
-                        return Exception(f"Division by zero on line {line+1}: {code[line]}")
-                    runtime.variables[words[0]] /= val
-                elif words[1] == "++":
-                    runtime.variables[words[0]] += 1
-                elif words[1] == "--":
-                    runtime.variables[words[0]] -= 1
-                else:
-                    return Exception(f"Invalid variable operation on line {line+1}: {code[line]}")
+                if not compute_variable_operation(words, line, code):
+                    return
+                
+                
                 
                 
             # check if the first word is a comment
@@ -83,8 +85,20 @@ def main(path: str):
                 continue
             
             else:
-                return Exception(f"Invalid instruction on line {line+1}: {code[line]}")
+                runtime.logger.log( Exception(f"Invalid instruction on line {line+1}: {code[line]}"))
+                pass
     return runtime.wallet
+
+# this function finds all the codeblocks in the code that can be jumped to by to goto statements
+def record_codeblocks(code):
+    for line in range(len(code)):
+        words = code[line].split(maxsplit=1)
+        if words[0] == "block":
+            if words[1] in runtime.codeblocks.keys():
+                runtime.logger.log(Exception(f"Codeblock {words[1]} already exists"))
+                return
+            runtime.codeblocks[words[1]] = line
+    return True
 
 def compute_type(value):
     if value[0] == "\"" and value[-1] == "\"":
@@ -95,7 +109,43 @@ def compute_type(value):
         except:
             return Exception(f"Invalid value: {value}")
 
+def compute_variable_operation(words, line, code):
+    val = compute_type(words[2])
+    try:
+        if words[1] == "=":
+            runtime.variables[words[0]] = val
+        elif words[1] == "+=":
+            runtime.variables[words[0]] += val
+        elif words[1] == "-=":
+            runtime.variables[words[0]] -= val
+        elif words[1] == "*=":
+            runtime.variables[words[0]] *= val
+        elif words[1] == "/=":
+            if val == 0:
+                runtime.logger.log(Exception(f"Division by zero on line {line+1}: {code[line]}"))
+                return
+            runtime.variables[words[0]] /= val
+        elif words[1] == "++":
+            runtime.variables[words[0]] += 1
+        elif words[1] == "--":
+            runtime.variables[words[0]] -= 1
+        elif words[1] == "<-":
+            if words[2] in runtime.instructions:
+                val = runtime.instructions[words[2]].execute(*words[3:])
+                if isinstance(val, Exception):
+                    runtime.logger.log(val)
+                    return
+                runtime.variables[words[0]] = val
+        else:
+            runtime.logger.log(Exception(f"Invalid variable operation on line {line+1}: {code[line]}"))
+            return
+    except:
+        runtime.logger.log(Exception(f"Invalid variable operation on line {line+1}: {code[line]}"))
+        return
+    return True
+
 if __name__ == "__main__":
-    print(main("code.Mlang"))
+    main("code.Mlang")
+    runtime.stop()
 
 

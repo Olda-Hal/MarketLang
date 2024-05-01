@@ -154,7 +154,50 @@ class PrintInstruction(UnpayedInstruction):
                 if variable_name not in self.runtime.variables:
                     return Exception("Variable not found")
                 else:
-                    print(self.runtime.variables[variable_name])
+                    self.runtime.logger.log(self.runtime.variables[variable_name])
                     return True
+            except Exception as e:
+                return e
+
+# Payed instructions
+
+class IfInstruction(PayedInstruction):
+        
+        def __init__(self, name: str, runtime: object) -> None:
+            super().__init__(name, runtime)
+        
+        def execute(self, var1: str, condition: str, var2: str, lines: str) -> Union[Exception, bool]:
+            try:
+                if var1 not in self.runtime.variables or var2 not in self.runtime.variables:
+                    return Exception("Variable not found")
+                else:
+                    var1 = self.runtime.variables[var1]
+                    var2 = self.runtime.variables[var2]
+                    if condition == "==":
+                        return var1 == var2
+                    elif condition == "!=":
+                        return var1 != var2
+                    elif condition == ">":
+                        return var1 > var2
+                    elif condition == "<":
+                        return var1 < var2
+                    elif condition == ">=":
+                        return var1 >= var2
+                    elif condition == "<=":
+                        return var1 <= var2
+            except Exception as e:
+                return e
+
+class gotoInstruction(PayedInstruction):
+        
+        def __init__(self, name: str, runtime: object) -> None:
+            super().__init__(name, runtime)
+        
+        def execute(self, line: int) -> Union[Exception, bool]:
+            try:
+                if line < 0:
+                    return Exception("Invalid line number")
+                else:
+                    return line
             except Exception as e:
                 return e

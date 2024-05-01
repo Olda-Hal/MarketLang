@@ -1,4 +1,5 @@
-VAR0 = 3
+VAR0 = "ech"
 VAR0 += 7
-VAR0 /= 3
-VAR0 /= 0
+$VAR0 /= 3
+
+print VAR0
