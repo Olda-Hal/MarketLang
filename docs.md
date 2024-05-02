@@ -85,6 +85,17 @@ if the message doesnt look like a variable, it will be printed as is, otherwise 
 print hello world
 print VAR0
 ```
+### end
+this operation is used to end the program
+```mlang
+end
+```
+if you want to end the program in the middle of the code, you may use this operation. The interpreter will automatically insert the end instruction at the end of the file. this operation may be used in the following way:
+```mlang
+VAR0 <- wallet
+if VAR0 <= 10
+end
+```
 
 ## Variable operations
 these operations are free to use and do not require any payment. they are used to work with variables. variables are used to store values and can be used in operations

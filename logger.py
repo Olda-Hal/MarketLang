@@ -9,8 +9,10 @@ class Logger:
     
     
     def log(self, text: Union[Exception, str]) -> None:
-        if isinstance(text, Exception):
-            self.file.write(f"\nError: {text}\n\n")
+        if isinstance(text, Warning):
+            self.file.write(f"Warning: {text}\n")
+        elif isinstance(text, Exception):
+            self.file.write(f"Error: {text}\n")
         else:
             self.file.write(f"{text}\n")
     

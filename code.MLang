@@ -1,5 +1,6 @@
-VAR0 = "ech"
-VAR0 += 7
-$VAR0 /= 3
-
-print VAR0
+VAR0 = 0
+block start
+print hello world
+VAR0 ++
+if VAR0 != 1000000
+goto start

@@ -13,11 +13,11 @@ class Instruction:
         return 0
     
     def buy(self, count: int):
-        price = self.get_price(self.mu)*count
+        price = self.get_price()*count
         return price
 
     def sell(self, count: int):
-        price = self.get_price(self.mu)*count
+        price = self.get_price()*count
         return price
 
 class PayedInstruction(Instruction):
@@ -56,35 +56,36 @@ class PriceInstruction(UnpayedInstruction):
     def execute(self, inst: str) -> Union[Exception, bool]:
         try:
             if inst not in self.runtime.instructions:
-                return Exception("Instruction not found")
+                self.runtime.logger.log(Exception("Instruction not found"))
             else:
                 return self.runtime.instructions[inst].get_price()
         except Exception as e:
-            return e
+            self.runtime.logger.log( e)
 
 class BuyInstruction(UnpayedInstruction):
 
     def __init__(self, name: str, runtime: object) -> None:
         super().__init__(name, runtime)
 
-    def execute(self, inst: str, count: int) -> Union[Exception, bool]:
+    def execute(self, inst: str, count: str) -> Union[Exception, bool]:
         try:
+            count = int(count)
             if inst not in self.runtime.instructions:
-                return Exception("Instruction not found")
+                self.runtime.logger.log(Exception("Instruction not found"))
             else:
                 if count < 0:
-                    return Exception("Invalid count")
+                    self.runtime.logger.log( Exception("Invalid count"))
                 if self.runtime.user_instructions[inst].__class__.__name__ == "UnpayedInstruction":
-                    return Exception("Instruction is not buyable")
+                    self.runtime.logger.log( Exception("Instruction is not buyable"))
                 price = self.runtime.instructions[inst].buy(count)
                 if price > self.runtime.wallet:
-                    return Exception("Not enough money")
+                    self.runtime.logger.log( Exception("Not enough money. the price was: "+str(price)))
                 else:
                     self.runtime.wallet -= price
                     self.runtime.user_instructions[inst] += count
                     return True
         except Exception as e:
-            return e
+            self.runtime.logger.log(e)
 
 class SellInstruction(UnpayedInstruction):
     
@@ -94,21 +95,21 @@ class SellInstruction(UnpayedInstruction):
         def execute(self, inst: str, count: int) -> Union[Exception, bool]:
             try:
                 if inst not in self.runtime.instructions:
-                    return Exception("Instruction not found")
+                    self.runtime.logger.log(Exception("Instruction not found"))
                 else:
                     if count < 0:
-                        return Exception("Invalid count")
+                        self.runtime.logger.log(Exception("Invalid count"))
                     if self.runtime.user_instructions[inst].__class__.__name__ == "UnpayedInstruction":
-                        return Exception("Instruction is not sellable")
+                        self.runtime.logger.log(Exception("Instruction is not sellable"))
                     price = self.runtime.instructions[inst].sell(count)
                     if self.runtime.user_instructions[inst] < count:
-                        return Exception("Not enough instructions")
+                        self.runtime.logger.log(Exception("Not enough instructions"))
                     else:
                         self.runtime.wallet += price
                         self.runtime.user_instructions[inst] -= count
                         return True
             except Exception as e:
-                return e
+                self.runtime.logger.log(e)
 
 class CountInstruction(UnpayedInstruction):
     
@@ -118,13 +119,13 @@ class CountInstruction(UnpayedInstruction):
     def execute(self, inst: str) -> Union[Exception, int]:
         try:
             if inst not in self.runtime.instructions:
-                return Exception("Instruction not found")
+                self.runtime.logger.log(Exception("Instruction not found"))
             else:
                 if self.runtime.user_instructions[inst].__class__.__name__ == "UnpayedInstruction":
-                    return Exception("You have infinite number of these instructions")
+                    self.runtime.logger.log(Exception("You have infinite number of these instructions"))
                 return self.runtime.user_instructions[inst]
         except Exception as e:
-            return e
+            self.runtime.logger.log(e)
 
 class WalletInstruction(UnpayedInstruction):
     
@@ -139,25 +140,39 @@ class WaitInstruction(UnpayedInstruction):
         def __init__(self, name: str, runtime: object) -> None:
             super().__init__(name, runtime)
         
-        def execute(self) -> Union[Exception, bool]:
-            for inst in self.runtime.instructions.keys():
-                if self.runtime.instructions[inst].__class__.__name__ == "PayedInstruction":
-                    self.runtime.instructions[inst].wait()
+        def execute(self, time: str) -> Union[Exception, bool]:
+            try:
+                for i in range(int(time)):
+                    for inst in self.runtime.instructions.keys():
+                        if self.runtime.instructions[inst].__class__.__name__ == "PayedInstruction":
+                            self.runtime.instructions[inst].wait()
+            except Exception as e:
+                self.runtime.logger.log(e)
 
 class PrintInstruction(UnpayedInstruction):
         
         def __init__(self, name: str, runtime: object) -> None:
             super().__init__(name, runtime)
         
-        def execute(self, variable_name: str) -> Union[Exception, bool]:
+        def execute(self, *variable_name: str) -> Union[Exception, bool]:
             try:
                 if variable_name not in self.runtime.variables:
-                    return Exception("Variable not found")
+                    variable_name = " ".join(variable_name)
+                    self.runtime.logger.log(variable_name)
                 else:
                     self.runtime.logger.log(self.runtime.variables[variable_name])
                     return True
             except Exception as e:
-                return e
+                self.runtime.logger.log(e)
+
+class EndInstruction(UnpayedInstruction):
+            
+            def __init__(self, name: str, runtime: object) -> None:
+                super().__init__(name, runtime)
+            
+            def execute(self) -> bool:
+                self.runtime.stop()
+                return True
 
 # Payed instructions
 
@@ -166,38 +181,52 @@ class IfInstruction(PayedInstruction):
         def __init__(self, name: str, runtime: object) -> None:
             super().__init__(name, runtime)
         
-        def execute(self, var1: str, condition: str, var2: str, lines: str) -> Union[Exception, bool]:
+        def execute(self, var1: str, condition: str, var2: str) -> Union[Exception, bool]:
             try:
-                if var1 not in self.runtime.variables or var2 not in self.runtime.variables:
-                    return Exception("Variable not found")
+                if var1 not in self.runtime.variables:
+                    var1 = self.compute_type(var1)
                 else:
                     var1 = self.runtime.variables[var1]
+                if var2 not in self.runtime.variables:
+                    var2 = self.compute_type(var2)
+                else:
                     var2 = self.runtime.variables[var2]
-                    if condition == "==":
-                        return var1 == var2
-                    elif condition == "!=":
-                        return var1 != var2
-                    elif condition == ">":
-                        return var1 > var2
-                    elif condition == "<":
-                        return var1 < var2
-                    elif condition == ">=":
-                        return var1 >= var2
-                    elif condition == "<=":
-                        return var1 <= var2
-            except Exception as e:
-                return e
 
-class gotoInstruction(PayedInstruction):
+                if condition == "==":
+                    return var1 == var2
+                elif condition == "!=":
+                    return var1 != var2
+                elif condition == ">":
+                    return var1 > var2
+                elif condition == "<":
+                    return var1 < var2
+                elif condition == ">=":
+                    return var1 >= var2
+                elif condition == "<=":
+                    return var1 <= var2
+            except Exception as e:
+                self.runtime.logger.log(e)
+        
+        def compute_type(self,value):
+            if value[0] == "\"" and value[-1] == "\"":
+                return str(value)
+            else:
+                try:
+                    return float(value)
+                except:
+                    self.runtime.logger.log(Exception(f"Invalid value: {value}"))
+
+class GotoInstruction(PayedInstruction):
         
         def __init__(self, name: str, runtime: object) -> None:
             super().__init__(name, runtime)
         
-        def execute(self, line: int) -> Union[Exception, bool]:
+        def execute(self, block_name: str) -> Union[Exception, bool]:
             try:
-                if line < 0:
-                    return Exception("Invalid line number")
+                if block_name not in self.runtime.codeblocks:
+                    self.runtime.logger.log(Exception("Codeblock not found"))
                 else:
-                    return line
+                    self.runtime.current_line = self.runtime.codeblocks[block_name]
+                    return True
             except Exception as e:
-                return e
+                self.runtime.logger.log( e)
