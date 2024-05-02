@@ -1,6 +1,8 @@
 # Documentation
-this is the documentation for all the instructions in the MLang language
-these instructions are split into three categories: free, payed, and variable operations
+this is the documentation for everything about the Mlang language.
+
+# Instructions (operations)
+there are three types of instructions: free, variable and payed. free instructions are free to use and do not require any payment. variable instructions are used to work with variables and require you to rent a variable before you can use it. payed instructions are payed and require you to buy them before you can use them. you may use the `price` operation to get the price of an operation and the `buy` operation to buy it.
 
 ## Free operations
 these operations are free to use and do not require any payment
@@ -172,5 +174,13 @@ if VAR0 > 5
 goto myIfBlock
 ```
 
-## Types
+# Types
 Mlang has two types of values: numbers and strings. numbers are used to store numerical values and strings are used to store text values. the numerical values are stored as 64 bit floating point numbers and the text values are stored as UTF-8 encoded strings.
+
+# Comments
+comments are used to write notes in the code that are not executed. because we want to increase the amount of money flowing through our code, you can create a comment by any common money symbol (€, $, £, ¥, ₿)
+
+# Logger
+the logger is used to log all the actions that are performed in the code. this is used to track the flow of the code. the log is a file that is created in the same directory as the code and is named `console.log`. the logger logs every exception, suspicious action (Warning) and every print statement. You may set the logger to one of the following modes by setting the logging level. this has to be done at the start of the code (first line):
+
+
