@@ -1,13 +1,17 @@
-- [ ] price
-- [ ] buy
-- [ ] sell
+- [x] price
+- [x] buy
+- [x] sell
 - [x] count
 - [x] wallet
 - [x] wait
 - [x] print
-- [ ] rent
-- [ ] release
+- [x] rent
+- [x] release
 - [x] <- operator
 - [x] goto
 - [x] codeblocks
 - [x] if
+- [x] else
+- [x] evaluating expressions
+
+- [ ] add logging levels with a event log that has an observer on the logger class that automatticaly logs to a file

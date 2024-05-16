@@ -3,9 +3,10 @@ from typing import *
 
 
 class Logger:
-    def __init__(self, path: str = "console.log") -> None:
+    def __init__(self, path: str = "console.log", level: int =1) -> None:
         self.path = path
         self.file = open(path, "w")
+        self.loglevel = level
     
     
     def log(self, text: Union[Exception, str]) -> None:

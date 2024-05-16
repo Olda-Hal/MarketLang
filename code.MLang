@@ -1,6 +1,5 @@
-VAR0 = 0
+#looplimit 1000
 block start
-print hello world
-VAR0 ++
-if VAR0 != 1000000
+buy if 100
 goto start
+end

@@ -1,6 +1,8 @@
 import instruction
 import math
 import logger
+import expression_executor
+import argparse
 # this file is the main file for the interpretation of the MarketLang language
 
 # first of all, we need to define all of the avalible instructions in the language
@@ -13,11 +15,14 @@ class Runtime:
         self.wallet = 10000
         self.user_instructions = {}
         self.variables = {}
-        self.logger = logger.Logger("console.log")
+        self.rented_instructions = 0
+        self.logger = logger.Logger("console.log", level=0)
         self.codeblocks = {}
         self.current_line = 0
         self.code = []
         self.code_is_running = True
+        self.executed_lines = 0
+        self.runtime_execution_limit = 100000
     
     def stop(self):
         self.code_is_running = False
@@ -36,6 +41,8 @@ runtime.instructions["wallet"] = instruction.WalletInstruction("wallet",runtime)
 runtime.instructions["wait"] = instruction.WaitInstruction("wait",runtime)
 runtime.instructions["print"] = instruction.PrintInstruction("print",runtime)
 runtime.instructions["end"] = instruction.EndInstruction("end",runtime)
+runtime.instructions["rent"] = instruction.RentInstruction("rent",runtime)
+runtime.instructions["release"] = instruction.ReleaseInstruction("release",runtime)
 
 # payed instructions
 runtime.instructions["if"] = instruction.IfInstruction("if",runtime)
@@ -63,12 +70,7 @@ def main(path: str):
         runtime.code = file.read()
         # split the code into lines
         runtime.code = runtime.code.split("\n")
-        # remove all blank lines
-        runtime.code = [line for line in runtime.code if len(line) > 0]
         for line in range(len(runtime.code)):
-            # remove all comments
-            if runtime.code[line][0] in currency_symbols:
-                runtime.code[line] = ""
             # split all lines to separate arguments
             runtime.code[line] = runtime.code[line].split()
         
@@ -78,14 +80,29 @@ def main(path: str):
         # record all the codeblocks, if there is an error, end code execution
         if not record_codeblocks(runtime.code):
             return
+    # read the first line of the code and set the logger level by the number
+
 
     # interpret each line
     while(runtime.code_is_running):
         if not interpret_next_line():
             break
+        runtime.executed_lines += 1
+        if runtime.executed_lines > runtime.runtime_execution_limit:
+            runtime.logger.log(Exception("Code execution limit reached"))
+            break
 
 def interpret_next_line():
     line = runtime.code[runtime.current_line]
+    # if the line is empty, skip it
+    if len(line) == 0:
+        runtime.current_line += 1
+        return True
+    # if the line is a comment, skip it
+    if line[0][0] in currency_symbols:
+        runtime.current_line += 1
+        return True
+    
     # if the line is a code block (not an instruction), skip it
     if line[0] == "block":
         runtime.current_line += 1
@@ -94,26 +111,42 @@ def interpret_next_line():
         runtime.stop()
         return
     
+    if line[0] == "#loglevel":
+        runtime.logger.loglevel = int(line[1])
+        runtime.current_line += 1
+        return True
+    
+    if line[0] == "#looplimit":
+        runtime.runtime_execution_limit = int(line[1])
+        runtime.current_line += 1
+        return True
+    
+    if line[0] == "else":
+            runtime.current_line += 2
+            return True
     # if the line contains a valid instruction, execute it
     if line[0] in runtime.instructions:
+        # check if the user owns the instruction and if they have enough of it buy it for them
+        # chcecks only if the instruction is payed
+        if isinstance(runtime.instructions[line[0]], instruction.PayedInstruction):
+            if runtime.user_instructions[line[0]] > 0:
+                runtime.user_instructions[line[0]] -= 1
+            else:
+                if not runtime.instructions["buy"].execute(line[0], 1):
+                    runtime.stop()
+                    return
+                
+                if runtime.logger.loglevel >= 1:
+                    runtime.logger.log(Warning(f"User does not own instruction {line[0]}. automatically bought it for them."))
         if line[0] == "if":
             execute = runtime.instructions[line[0]].execute(*line[1:])
             if not execute:
                 runtime.current_line += 1
-                return
+                if runtime.code[runtime.current_line+1][0] == "else":
+                    runtime.current_line += 1
+        
+                
         else:
-            # check if the user owns the instruction and if they have enough of it buy it for them
-            # chcecks only if the instruction is payed
-            if runtime.instructions[line[0]].__class__.__name__ == "PayedInstruction":
-                if runtime.user_instructions[line[0]] > 0:
-                    runtime.user_instructions[line[0]] -= 1
-                else:
-                    if not runtime.instructions["buy"].execute(line[0]):
-                        runtime.stop()
-                        return
-                    
-                    runtime.logger.log(Warning(f"User does not own instruction {line[0]}. automatically bought it for them."))
-
             runtime.instructions[line[0]].execute(*line[1:])
     # if the line contains a variable operation, execute it
     elif line[0] in runtime.variables:
@@ -132,6 +165,8 @@ def interpret_next_line():
 # this function finds all the codeblocks in the code that can be jumped to by to goto statements
 def record_codeblocks(code):
     for line in range(len(code)):
+        if len(runtime.code[line]) == 0:
+            continue	
         if runtime.code[line][0] == "block":
             if runtime.code[line][1] in runtime.codeblocks.keys():
                 runtime.logger.log(Exception(f"Codeblock {runtime.code[line][1]} already exists"))
@@ -140,30 +175,33 @@ def record_codeblocks(code):
     return True
 
 def compute_type(value):
+    value = ' '.join(value)
     if value[0] == "\"" and value[-1] == "\"":
         return str(value)
     else:
         try:
-            return float(value)
+            val = expression_executor.eval_expr(value, runtime.variables)
+            return val
+
         except:
             runtime.logger.log(Exception(f"Invalid value: {value}"))
 
 def compute_variable_operation(words, line, code):
     try:
         if words[1] == "=":
-            val = compute_type(words[2])
+            val = compute_type(words[2:])
             runtime.variables[words[0]] = val
         elif words[1] == "+=":
-            val = compute_type(words[2])
+            val = compute_type(words[2:])
             runtime.variables[words[0]] += val
         elif words[1] == "-=":
-            val = compute_type(words[2])
+            val = compute_type(words[2:])
             runtime.variables[words[0]] -= val
         elif words[1] == "*=":
-            val = compute_type(words[2])
+            val = compute_type(words[2:])
             runtime.variables[words[0]] *= val
         elif words[1] == "/=":
-            val = compute_type(words[2])
+            val = compute_type(words[2:])
             if val == 0:
                 runtime.logger.log(Exception(f"Division by zero on line {line+1}: {code[line]}"))
                 return
@@ -188,7 +226,15 @@ def compute_variable_operation(words, line, code):
     return True
 
 if __name__ == "__main__":
-    main("code.Mlang")
-    runtime.stop()
+    parser = argparse.ArgumentParser(description="MarketLang interpreter for the ZISK competition")
+    parser.add_argument("path", type=str, help="Path to the file to interpret")
+    parser.add_argument("-l", "--log_path", type=str, help="Path to the log file")
+    parser.add_argument("--version", action="version", version="MarketLang interpreter v1.0")
+    args = parser.parse_args()
+    if args.log_path:
+        runtime.logger = logger.Logger(args.log_path, level=0)
+    main(args.path)
+    if runtime.code_is_running:
+        runtime.stop()
 
 

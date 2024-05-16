@@ -142,6 +142,7 @@ if you try to do any operation on a type that doesnt support it, it will throw a
 these operations may be used in the following way:
 ```mlang
 VAR0 = 10
+VAR0 = VAR1 * 5
 VAR0 += 5
 VAR0 -= 3
 VAR0 *= 2
@@ -185,6 +186,15 @@ if VAR0 > 5
 goto myIfBlock
 ```
 
+### else
+this operation is used to execute the following line of code only if the condition in the `if` operation is not met. It may be chained with the `if` operation to create more complex conditions. cost of this is included in the previous `if` operation
+```mlang
+if VAR0 > 5
+print "VAR0 is greater than 5"
+else
+print "VAR0 is less than or equal to 5"
+```
+
 # Types
 Mlang has two types of values: numbers and strings. numbers are used to store numerical values and strings are used to store text values. the numerical values are stored as 64 bit floating point numbers and the text values are stored as UTF-8 encoded strings.
 
@@ -192,6 +202,24 @@ Mlang has two types of values: numbers and strings. numbers are used to store nu
 comments are used to write notes in the code that are not executed. because we want to increase the amount of money flowing through our code, you can create a comment by any common money symbol (€, $, £, ¥, ₿)
 
 # Logger
-the logger is used to log all the actions that are performed in the code. this is used to track the flow of the code. the log is a file that is created in the same directory as the code and is named `console.log`. the logger logs every exception, suspicious action (Warning) and every print statement. You may set the logger to one of the following modes by setting the logging level. this has to be done at the start of the code (first line):
+the logger is used to log all the actions that are performed in the code. this is used to track the flow of the code. the log is a file that is created in the same directory as the code and is named `console.log`. the logger logs every exception, suspicious action (Warning) and every print statement. 
+Logger has few levels of logging. you may set the level by setting the enviroment variable `loglevel` by the following way:
+```mlang
+#loglevel 0
+$ this sets the log level to 0
+```
+the levels are:
+- 0: no logging (only errors)
+- 1: level 0 + warnings
+- 2: level 1 + every event in the code (every line execution)
 
+default log level is 0. you may change the log level at any time in the code.
 
+# Infinite loops
+if you create an infinite loop in the code, the code will stop executing and throw an exception. this is done to prevent the code from running forever and to prevent the user from going bankrupt. The hard limit is 100 000 lines executed. if you reach this limit, the code will stop executing and throw an exception.
+you may change the limit by setting the enviroment variable `looplimit` by the following way:
+```mlang
+#looplimit 100000
+$ this sets the loop limit to 100000
+```
+the biggest limit is 1 000 000. default limit is 100 000. you may change the limit at any time in the code.
