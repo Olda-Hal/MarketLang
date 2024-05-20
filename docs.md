@@ -195,6 +195,14 @@ else
 print "VAR0 is less than or equal to 5"
 ```
 
+### getchar
+this operation is used to get a single character from a string
+```mlang
+VAR0 = "hello"
+VAR1 <- getchar VAR0 2
+print VAR1
+```
+
 # Types
 Mlang has two types of values: numbers and strings. numbers are used to store numerical values and strings are used to store text values. the numerical values are stored as 64 bit floating point numbers and the text values are stored as UTF-8 encoded strings.
 

@@ -47,6 +47,7 @@ runtime.instructions["release"] = instruction.ReleaseInstruction("release",runti
 # payed instructions
 runtime.instructions["if"] = instruction.IfInstruction("if",runtime)
 runtime.instructions["goto"] = instruction.GotoInstruction("goto",runtime)
+runtime.instructions["getchar"] = instruction.GetCharInstruction("getchar",runtime)
 
 
 # now we need to add 3 free variables to the runtime
@@ -226,6 +227,7 @@ def compute_variable_operation(words, line, code):
     return True
 
 if __name__ == "__main__":
+    """
     parser = argparse.ArgumentParser(description="MarketLang interpreter for the ZISK competition")
     parser.add_argument("path", type=str, help="Path to the file to interpret")
     parser.add_argument("-l", "--log_path", type=str, help="Path to the log file")
@@ -233,7 +235,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.log_path:
         runtime.logger = logger.Logger(args.log_path, level=0)
-    main(args.path)
+    """
+    main("code.MLang")
     if runtime.code_is_running:
         runtime.stop()
 

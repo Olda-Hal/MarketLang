@@ -230,6 +230,22 @@ class ReleaseInstruction(UnpayedInstruction):
 
 # Payed instructions
 
+class GetCharInstruction(PayedInstruction):
+
+    def __init__(self, name: str, runtime: object) -> None:
+        super().__init__(name, runtime)
+    
+    def execute(self, variable, pos) -> Union[Exception, str]:
+        if self.runtime.logger.loglevel >= 2:
+            self.runtime.logger.log("Executing getchar instruction")
+        try:
+            if variable not in self.runtime.variables:
+                self.runtime.logger.log(Exception("Variable not found"))
+            else:
+                return self.runtime.variables[variable][int(pos)]
+        except Exception as e:
+            self.runtime.logger.log(e)
+
 class IfInstruction(PayedInstruction):
         
         def __init__(self, name: str, runtime: object) -> None:

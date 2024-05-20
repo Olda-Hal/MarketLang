@@ -13,5 +13,6 @@
 - [x] if
 - [x] else
 - [x] evaluating expressions
+- [ ] add a way to get a single charracter from a string
 
 - [ ] add logging levels with a event log that has an observer on the logger class that automatticaly logs to a file

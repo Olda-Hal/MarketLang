@@ -1,5 +1,3 @@
-#looplimit 1000
-block start
-buy if 100
-goto start
-end
+VAR1 = "UUDEAJAJ"
+VAR0 <- getchar VAR1 3
+print VAR0
