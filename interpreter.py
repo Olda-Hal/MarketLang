@@ -23,6 +23,7 @@ class Runtime:
         self.code_is_running = True
         self.executed_lines = 0
         self.runtime_execution_limit = 100000
+        self.memory = {}
     
     def stop(self):
         self.code_is_running = False
@@ -48,6 +49,8 @@ runtime.instructions["release"] = instruction.ReleaseInstruction("release",runti
 runtime.instructions["if"] = instruction.IfInstruction("if",runtime)
 runtime.instructions["goto"] = instruction.GotoInstruction("goto",runtime)
 runtime.instructions["getchar"] = instruction.GetCharInstruction("getchar",runtime)
+runtime.instructions["readmem"] = instruction.ReadMemInstruction("readmem",runtime)
+runtime.instructions["writemem"] = instruction.WriteMemInstruction("writemem",runtime)
 
 
 # now we need to add 3 free variables to the runtime
@@ -204,7 +207,8 @@ def compute_variable_operation(words, line, code):
         elif words[1] == "/=":
             val = compute_type(words[2:])
             if val == 0:
-                runtime.logger.log(Exception(f"Division by zero on line {line+1}: {code[line]}"))
+                result = ' '.join(runtime.code[runtime.current_line])
+                runtime.logger.log(Exception(f"Division by zero on line {line+1}: {result}"))
                 return
             runtime.variables[words[0]] /= val
         elif words[1] == "++":
@@ -218,11 +222,17 @@ def compute_variable_operation(words, line, code):
                     runtime.logger.log(val)
                     return
                 runtime.variables[words[0]] = val
+            else:
+                result = ' '.join(runtime.code[runtime.current_line])
+                runtime.logger.log(Exception(f"Invalid operation on line {line+1}: {result}"))
+                return
         else:
-            runtime.logger.log(Exception(f"Invalid variable operation on line {line+1}: {code[line]}"))
+            result = ' '.join(runtime.code[runtime.current_line])
+            runtime.logger.log(Exception(f"Invalid variable operation on line {line+1}: {result}"))
             return
     except:
-        runtime.logger.log(Exception(f"Invalid variable operation on line {line+1}: {code[line]}"))
+        result = ' '.join(runtime.code[runtime.current_line])
+        runtime.logger.log(Exception(f"Invalid variable operation on line {line+1}: {result}"))
         return
     return True
 

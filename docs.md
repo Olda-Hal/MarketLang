@@ -203,6 +203,35 @@ VAR1 <- getchar VAR0 2
 print VAR1
 ```
 
+### readmem
+this operation is used to read a memory list
+```mlang
+VAR0 = readmem <POS>
+```
+this operation may be used in the following way:
+```mlang
+VAR1 = 10
+VAR0 = readmem 0
+print VAR0
+VAR0 = readmem VAR1
+print VAR0
+```
+
+### writemem
+this operation is used to write a value to a memory list
+```mlang
+writemem <POS> <VALUE>
+```
+this operation may be used in the following way:
+```mlang
+VAR0 = 10
+writemem 0 VAR0
+writemem VAR0 20
+```
+
+# Memory list
+Memory List is an alternative way to store int values. it is a infinite list of values that can be accessed by their position. you may use the `readmem` operation to read a value from the memory list and the `writemem` operation to write a value to the memory list. the memory list is initialized with 0s. if you try to read from a position that is not initialized, it will return 0. You may access memory values with negative positions (it has infinite members in both directions). The main disadvantage of the memory list is that you have to pay for every read and write operation.
+
 # Types
 Mlang has two types of values: numbers and strings. numbers are used to store numerical values and strings are used to store text values. the numerical values are stored as 64 bit floating point numbers and the text values are stored as UTF-8 encoded strings.
 

@@ -304,3 +304,44 @@ class GotoInstruction(PayedInstruction):
                     return True
             except Exception as e:
                 self.runtime.logger.log( e)
+
+class ReadMemInstruction(PayedInstruction):
+    
+    def __init__(self, name: str, runtime: object) -> None:
+        super().__init__(name, runtime)
+    
+    def execute(self, pos: str) -> Union[Exception, bool]:
+        if self.runtime.logger.loglevel >= 2:
+            self.runtime.logger.log("Executing readmem instruction for memory position "+pos+" on line "+str(self.runtime.current_line)+" of code")
+        try:
+            if pos in self.runtime.variables:
+                pos = self.runtime.variables[pos]
+            else:
+                pos = int(pos)
+            if pos not in self.runtime.memory:
+                return 0
+            return self.runtime.memory[pos]
+        except Exception as e:
+            self.runtime.logger.log(e)
+
+class WriteMemInstruction(PayedInstruction):
+
+    def __init__(self, name: str, runtime: object) -> None:
+        super().__init__(name, runtime)
+    
+    def execute(self, pos: str, value: str) -> Union[Exception, bool]:
+        if self.runtime.logger.loglevel >= 2:
+            self.runtime.logger.log("Executing writemem instruction" + " for memory position "+pos+" with value "+value +" on line "+str(self.runtime.current_line)+" of code")
+        try:
+            if pos in self.runtime.variables:
+                pos = self.runtime.variables[pos]
+            else:
+                pos = int(pos)
+            if value in self.runtime.variables:
+                value = self.runtime.variables[value]
+            else:
+                value = int(value)
+            self.runtime.memory[pos] = value
+            return True
+        except Exception as e:
+            self.runtime.logger.log(e)

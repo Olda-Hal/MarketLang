@@ -1,3 +1,5 @@
-VAR1 = "UUDEAJAJ"
-VAR0 <- getchar VAR1 3
+VAR1 = 0
+VAR2 = 5
+writemem VAR1 VAR2
+VAR0 <- readmem VAR1
 print VAR0
