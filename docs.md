@@ -4,6 +4,9 @@ this is the documentation for everything about the Mlang language.
 # Instructions (operations)
 there are three types of instructions: free, variable and payed. free instructions are free to use and do not require any payment. variable instructions are used to work with variables and require you to rent a variable before you can use it. payed instructions are payed and require you to buy them before you can use them. you may use the `price` operation to get the price of an operation and the `buy` operation to buy it.
 
+# Syntax
+mlang has a symple syntax. every line of code is a single instruction. every instruction is separated by a new line. every keyword and values is separated by a space. every operation has a specific syntax that you have to follow. every operation has a specific number of arguments that you have to provide. All the operations are case insensitive. 
+
 ## Free operations
 these operations are free to use and do not require any payment
 
@@ -231,6 +234,7 @@ writemem VAR0 20
 
 # Memory list
 Memory List is an alternative way to store int values. it is a infinite list of values that can be accessed by their position. you may use the `readmem` operation to read a value from the memory list and the `writemem` operation to write a value to the memory list. the memory list is initialized with 0s. if you try to read from a position that is not initialized, it will return 0. You may access memory values with negative positions (it has infinite members in both directions). The main disadvantage of the memory list is that you have to pay for every read and write operation.
+
 
 # Types
 Mlang has two types of values: numbers and strings. numbers are used to store numerical values and strings are used to store text values. the numerical values are stored as 64 bit floating point numbers and the text values are stored as UTF-8 encoded strings.
