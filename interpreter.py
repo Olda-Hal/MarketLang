@@ -2,7 +2,6 @@ import instruction
 import math
 import logger
 import expression_executor
-import argparse
 # this file is the main file for the interpretation of the MarketLang language
 
 # first of all, we need to define all of the avalible instructions in the language
@@ -29,7 +28,6 @@ class Runtime:
         self.code_is_running = False
         self.logger.log("-----------Program stopped-----------")
         self.logger.log(f"Final wallet: {self.wallet}\nFinal variables: {self.variables}\nFinal user instructions: {self.user_instructions}")
-        self.logger.close()
 
 
 runtime = Runtime()
@@ -67,23 +65,20 @@ for inst in runtime.instructions.keys():
 currency_symbols = ["€", "$", "£", "¥", "₿"]
 
 # now we need to define the main function that will interpret the code
-def main(path: str):
-    # open the file
-    with open(path, "r") as file:
-        # read the file
-        runtime.code = file.read()
-        # split the code into lines
-        runtime.code = runtime.code.split("\n")
-        for line in range(len(runtime.code)):
-            # split all lines to separate arguments
-            runtime.code[line] = runtime.code[line].split()
-        
-        # add the end instruction to the end of the code
-        runtime.code.append(["end"])
+def main(code : str):
+    runtime.code = code
+    # split the code into lines
+    runtime.code = runtime.code.split("\n")
+    for line in range(len(runtime.code)):
+        # split all lines to separate arguments
+        runtime.code[line] = runtime.code[line].split()
+    
+    # add the end instruction to the end of the code
+    runtime.code.append(["end"])
 
-        # record all the codeblocks, if there is an error, end code execution
-        if not record_codeblocks(runtime.code):
-            return
+    # record all the codeblocks, if there is an error, end code execution
+    if not record_codeblocks(runtime.code):
+        return
     # read the first line of the code and set the logger level by the number
 
 
@@ -236,18 +231,9 @@ def compute_variable_operation(words, line, code):
         return
     return True
 
-if __name__ == "__main__":
-    """
-    parser = argparse.ArgumentParser(description="MarketLang interpreter for the ZISK competition")
-    parser.add_argument("path", type=str, help="Path to the file to interpret")
-    parser.add_argument("-l", "--log_path", type=str, help="Path to the log file")
-    parser.add_argument("--version", action="version", version="MarketLang interpreter v1.0")
-    args = parser.parse_args()
-    if args.log_path:
-        runtime.logger = logger.Logger(args.log_path, level=0)
-    """
-    main("code.MLang")
+# main function that interprets the code
+def start(code: str) -> str:
+    main(code)
     if runtime.code_is_running:
         runtime.stop()
-
-
+    return runtime.logger.result

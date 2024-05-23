@@ -5,17 +5,15 @@ from typing import *
 class Logger:
     def __init__(self, path: str = "console.log", level: int =1) -> None:
         self.path = path
-        self.file = open(path, "w")
+        self.result = ""
         self.loglevel = level
     
     
     def log(self, text: Union[Exception, str]) -> None:
         if isinstance(text, Warning):
-            self.file.write(f"Warning: {text}\n")
+            self.result += f"Warning: {text}\n"
         elif isinstance(text, Exception):
-            self.file.write(f"Error: {text}\n")
+            self.result += f"Error: {text}\n"
         else:
-            self.file.write(f"{text}\n")
+            self.result += f"{text}\n"
     
-    def close(self) -> None:
-        self.file.close()
