@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Market lang</title>
+    <script>
+      async function submitForm(event) {
+        event.preventDefault();
+        const inputString = document.getElementById("inputString").value;
+        const response = await fetch("/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ input_string: inputString }),
+        });
+        const result = await response.json();
+        document.getElementById("result").innerText = result;
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Enter your code here</h1>
+    <form onsubmit="submitForm(event)">
+      <textarea id="inputString" style="width: 98%; height: 75vh" placeholder="Enter your code here"></textarea><br /><br />
+      <button type="submit">Submit</button>
+    </form>
+    <h2>Response:</h2>
+    <pre id="result"></pre>
+  </body>
+</html>
